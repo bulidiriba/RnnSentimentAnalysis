@@ -70,44 +70,15 @@ class Dataset:
         with open(self._positive_dataset_path, encoding='ISO-8859-1') as f:
             all_sentences.append(f.read())
 
-        # to check the length of all_words
-        # print(len(all_sentences))
-        # to check the length of words in negative data
-        # print(len(all_sentences[0])
-
         # since all_word becomes 2D list lets change to 1D means mix positive and negative data together
         # inorder to simplify counting the frequency of each word in both negative and positive data
 
         # so when you mix the two list the result becomes a String
         all_data = all_sentences[0] + all_sentences[1]
 
-        # lets check type of all_data
-        # print("\ntype of all_data = ", type(all_data))
-
-        # lets check the length of all_data string
-        # print("the length of all_data = ", len(all_data))
-
-        # lets display the first 20 character in the all_data string
-        # for character in all_data[:20]:
-            # print(character)
 
         # now split the all_data string with space(" ") and add these split word to self._word_dictionary
         self._word_dictionary = all_data.split(" ")
-
-
-        # lets check the type of self._word_dictionary
-        # print("\ntype of self._word_dictionary = ", type(self._word_dictionary))
-
-        # lets check the length of self._word_dictionary
-        # print("length of self._word_dictionary = ", len(self._word_dictionary))
-        # print("\n")
-
-        # lets display the first 10 word dictionary
-        # for word in self._word_dictionary[:10]:
-        #    print(word)
-
-        # display all word dictionary
-        # print(self._word_dictionary)
 
         # now lets change the self._word_dictionary to the numpy array to find the frequency of each word using
         # the collections.Counter
