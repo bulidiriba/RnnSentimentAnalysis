@@ -2,6 +2,7 @@ import collections
 
 from blinker._utilities import lazy_property
 
+import numpy as np
 
 class Dataset:
     def __str__(self):
@@ -41,8 +42,6 @@ class Dataset:
         tot_data = pos_data + neg_data
         labels = [1] * len(pos_data) + [0] * len(neg_data)
 
-        print(len(labels), len(tot_data))
-
         return tot_data, labels
 
     @lazy_property
@@ -55,7 +54,8 @@ class Dataset:
         words = [w for line in self.labeled_dataset[0] for w in line.split()]
 
         count = [[self.rare_word, -1], [self.sentence_begin, -2], [self.sentence_end, -3]]
-        count.extend(collections.Counter(words).most_common(self._vocabulary_size - 1))
+        count.extend(collections.Counter(words).most_common(self._vocabulary_size - 3))
+        # I subtract -3 for the rare, begin and end was added because they increase vocabulary size by 3
 
         for entry in count:
             self._word_dictionary[entry[0]] = len(self._word_dictionary)
@@ -71,6 +71,30 @@ class Dataset:
         for sentence in self.labeled_dataset[0]:
             vectorized_data.append(self.sentence2vector(sentence))
         return vectorized_data, self.labeled_dataset[1]
+
+    @lazy_property
+    def language_model_dataset(self):
+        """
+        this property holds dataset for language models
+        the label of each input is the copy of the input shifted to the the left
+        sentence_start will be prepended to the input and sentence_end will be appended to the label
+        :return:tuple of inputs and labels
+        """
+        # lets take the vectorized data from the vector_dataset
+        vectorized_data = self.vector_dataset[0]
+        input_data = []
+        label_data = []
+
+        for vector in vectorized_data:
+            # for input add Sentence Start to the each vector and its index is on 1 postion
+            input_vector = [1] + vector
+            input_data.append(input_vector)
+
+            # for label add Sentece End to each vector and its index is on 2 postion
+            label_vector = vector + [2]
+            label_data.append(label_vector)
+
+        return input_data, label_data
 
     def word2index(self, word):
         """
@@ -93,12 +117,37 @@ class Dataset:
         vector = []
         for word in sentence_list.split(" "):
             vector.append(self.word2index(word))
+
         return vector
 
 
-dataset = Dataset("data/rt-polarity.pos", "data/rt-polarity.neg", 5000)
-for l,d in zip(dataset.labeled_dataset[1][:5],dataset.labeled_dataset[0][:5]):
-    print(l,d)
-print(dataset.word_dictionary[1])
-for l,d in zip(dataset.vector_dataset[1][:5],dataset.vector_dataset[0][:5]):
-    print(l,d)
+dataset = Dataset("data/rt-polarity.pos", "data/rt-polarity.neg", 10000)
+#
+# for l,d in zip(dataset.labeled_dataset[1][:5],dataset.labeled_dataset[0][:5]):
+#     print(l,d)
+#
+# print(dataset.word_dictionary[1])
+#
+# for l,d in zip(dataset.vector_dataset[1][:5],dataset.vector_dataset[0][:5]):
+#     print(l,d)
+#
+# # display the language model
+# for data, label in zip(dataset.language_model_dataset[0][:5], dataset.language_model_dataset[1][:5]):
+#     print("input_sent\n  ", data)
+#     print("expected_output\n  ", label)
+#     print('--------------\n')
+
+
+# changing the language model to the train_data
+X = []
+Y = []
+for input_data, label_data in zip(dataset.language_model_dataset[0][:], dataset.language_model_dataset[1][:]):
+    X.append(input_data)
+    Y.append(label_data)
+X_train = np.asarray(X)
+Y_train = np.asarray(Y)
+
+# print(X_train.shape)
+# print(Y_train.shape)
+
+
